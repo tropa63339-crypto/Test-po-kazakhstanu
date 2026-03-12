@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Объекты в Казахстане</title>
+
+<style>
+
+:root{
+--bg:#0b1020;
+--card:#121a33;
+--text:#eef2ff;
+--muted:#aab4d6;
+--line:rgba(255,255,255,.12);
+--ok:#39d98a;
+--bad:#ff6b6b;
+--accent:#6ea8ff;
+--warn:#ffd166;
+}
+
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(180deg,#101935,#0b1020);
+color:var(--text);
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:24px;
+}
+
+.card{
+background:var(--card);
+border-radius:20px;
+padding:20px;
+border:1px solid var(--line);
+}
+
+.startScreen{
+text-align:center;
+padding:70px 20px;
+}
+
+.startTitle{
+font-size:40px;
+margin-bottom:10px;
+}
+
+.startText{
+color:var(--muted);
+margin-bottom:30px;
+}
+
+.startButton{
+font-size:20px;
+padding:16px 40px;
+border-radius:16px;
+background:var(--accent);
+border:none;
+color:white;
+cursor:pointer;
+font-weight:700;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+margin-bottom:18px;
+flex-wrap:wrap;
+color:var(--muted);
+}
+
+.timer{
+color:var(--warn);
+font-weight:700;
+}
+
+.question{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.description{
+background:rgba(255,255,255,.03);
+padding:16px;
+border-radius:16px;
+border:1px solid var(--line);
+}
+
+.imageBox img{
+width:100%;
+height:260px;
+object-fit:cover;
+border-radius:12px;
+}
+
+.controls{
+margin-top:20px;
+display:grid;
+gap:12px;
+}
+
+input{
+padding:14px;
+border-radius:14px;
+border:1px solid var(--line);
+background:#0f1730;
+color:white;
+font-size:16px;
+}
+
+.buttons{
+display:flex;
+gap:12px;
+}
+
+button{
+padding:12px 18px;
+border:none;
+border-radius:14px;
+cursor:pointer;
+background:var(--accent);
+color:white;
+font-weight:600;
+}
+
+button.secondary{
+background:#2b355f;
+}
+
+.status{
+min-height:40px;
+font-weight:600;
+}
+
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+
+.resultBox{
+display:none;
+margin-top:20px;
+padding:16px;
+border-radius:16px;
+border:1px solid var(--line);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div id="startScreen" class="card startScreen">
+<h1 class="startTitle">Объекты в Казахстане</h1>
+<p class="startText">Проверь свои знания географии Казахстана</p>
+<button id="startBtn" class="startButton">Начать тест</button>
+</div>
+
+<div id="testScreen" class="card" style="display:none">
+
+<div class="topbar">
+<div>Вопрос: <b id="questionNumber">1</b></div>
+<div>Правильно: <b id="correctCount">0</b></div>
+<div>Ошибки: <b id="wrongCount">0</b></div>
+<div class="timer">⏳ <b id="timerValue">20</b> сек</div>
+</div>
+
+<div class="question">
+
+<div class="description">
+<h2>Описание</h2>
+<p id="descriptionText"></p>
+</div>
+
+<div class="imageBox">
+<img id="objectImage">
+</div>
+
+</div>
+
+<div class="controls">
+
+<input id="answerInput" placeholder="Введите название объекта">
+
+<div class="buttons">
+<button id="checkBtn">Проверить</button>
+<button id="nextBtn" class="secondary">Следующий</button>
+</div>
+
+<div id="status" class="status"></div>
+
+</div>
+
+<div id="resultBox" class="resultBox">
+<h2>Тест завершён</h2>
+<p><b>Итог:</b> <span id="finalScore"></span></p>
+<p><b>Оценка:</b> <span id="finalGrade"></span></p>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const questions = [
+
+{answer:"Каспийское море",aliases:["каспий","каспийское море"],description:"Крупнейшее озеро в мире, расположенное на западе Казахстана и омывающее его побережье.",image:"caspian.jpg"},
+{answer:"Озеро Алаколь",
+aliases:["алаколь","озеро алаколь"],
+description:"Крупное солёное озеро на востоке Казахстана, известное чистой водой и лечебными свойствами.",
+image:"alakol.jpg"
+},
+{answer:"Плато Устюрт",aliases:["устюрт","плато устюрт"],description:"Большое каменистое плато на западе Казахстана между Каспийским и Аральским морями.",image:"ustyurt.jpg"},
+{answer:"Чарынский каньон",aliases:["чарын","чарынский каньон"],description:"Глубокий каньон на юго-востоке Казахстана, известный необычными скальными формами и красивыми пейзажами.",image:"charyn.jpg"},
+{answer:"Сарыарка",aliases:["сарыарка"],description:"Крупная возвышенность в центральной части Казахстана, известная холмами и степными ландшафтами.",image:"saryarka.jpg"},
+
+{answer:"Аральское море",aliases:["арал","аральское море"],description:"Крупное солёное озеро в Центральной Азии, которое сильно уменьшилось из-за изменения русел рек.",image:"aral.jpg"},
+
+{answer:"Озеро Балхаш",aliases:["балхаш","озеро балхаш"],description:"Одно из крупнейших озёр Казахстана, уникальное тем, что его западная часть пресная, а восточная солёная.",image:"balkhash.jpg"},
+
+{answer:"Алтай",aliases:["алтай","алтайские горы"],description:"Горная система на востоке Казахстана, известная высокими вершинами, лесами и богатой природой.",image:"altai.jpg"},
+
+{answer:"Тянь-Шань",aliases:["тянь-шань","тянь шань"],description:"Крупная горная система на юго-востоке Казахстана с высокими снежными вершинами и ледниками.",image:"tianshan.jpg"},
+
+{answer:"Иртыш",aliases:["иртыш","река иртыш"],description:"Одна из крупнейших рек Казахстана, протекающая через восточную и северо-восточную часть страны.",image:"irtysh.jpg"}
+
+];
+
+let currentIndex=0;
+let correct=0;
+let wrong=0;
+let timer=20;
+let timerId;
+let answered=false;
+
+const startBtn=document.getElementById("startBtn");
+const startScreen=document.getElementById("startScreen");
+const testScreen=document.getElementById("testScreen");
+
+const descriptionText=document.getElementById("descriptionText");
+const objectImage=document.getElementById("objectImage");
+const answerInput=document.getElementById("answerInput");
+const status=document.getElementById("status");
+
+const questionNumber=document.getElementById("questionNumber");
+const correctCount=document.getElementById("correctCount");
+const wrongCount=document.getElementById("wrongCount");
+const timerValue=document.getElementById("timerValue");
+
+const resultBox=document.getElementById("resultBox");
+const finalScore=document.getElementById("finalScore");
+const finalGrade=document.getElementById("finalGrade");
+
+function startTimer(){
+timer=20;
+timerValue.textContent=timer;
+
+timerId=setInterval(()=>{
+timer--;
+timerValue.textContent=timer;
+
+if(timer===0){
+clearInterval(timerId);
+wrong++;
+wrongCount.textContent=wrong;
+showAnswer();
+}
+},1000);
+}
+
+function showQuestion(){
+
+if(currentIndex>=questions.length){
+finishTest();
+return;
+}
+
+answered=false;
+
+let q=questions[currentIndex];
+
+questionNumber.textContent=currentIndex+1;
+descriptionText.textContent=q.description;
+objectImage.src=q.image;
+
+answerInput.value="";
+status.textContent="";
+
+startTimer();
+}
+
+function showAnswer(){
+answered=true;
+clearInterval(timerId);
+status.innerHTML="Правильный ответ: "+questions[currentIndex].answer;
+}
+
+function checkAnswer(){
+
+if(answered)return;
+
+let user=answerInput.value.toLowerCase().trim();
+let q=questions[currentIndex];
+
+if(q.aliases.includes(user)){
+correct++;
+correctCount.textContent=correct;
+status.innerHTML="Правильно!";
+status.className="status ok";
+}else{
+wrong++;
+wrongCount.textContent=wrong;
+status.innerHTML="Неправильно. Ответ: "+q.answer;
+status.className="status bad";
+}
+
+answered=true;
+clearInterval(timerId);
+
+}
+
+function nextQuestion(){
+
+if(!answered){
+checkAnswer();
+}
+
+currentIndex++;
+showQuestion();
+
+}
+
+function finishTest(){
+
+let percent=(correct/questions.length)*100;
+let grade;
+
+if(percent>=90)grade=5;
+else if(percent>=75)grade=4;
+else if(percent>=50)grade=3;
+else grade=2;
+
+resultBox.style.display="block";
+
+finalScore.textContent=correct+"/"+questions.length;
+finalGrade.textContent=grade;
+
+}
+
+startBtn.onclick=()=>{
+startScreen.style.display="none";
+testScreen.style.display="block";
+showQuestion();
+};
+
+document.getElementById("checkBtn").onclick=checkAnswer;
+document.getElementById("nextBtn").onclick=nextQuestion;
+
+</script>
+
+</body>
+</html>
